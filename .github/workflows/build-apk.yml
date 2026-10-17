@@ -1,0 +1,77 @@
+
+name: Build Grok Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      website_url:
+        description: "Public HTTPS URL of your deployed website"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate website URL
+        env:
+          WEBSITE_URL: ${{ inputs.website_url }}
+        run: |
+          node --input-type=module -e '
+          const u = new URL(process.env.WEBSITE_URL);
+          if (u.protocol !== "https:") {
+            throw new Error("URL must use HTTPS");
+          }'
+
+      - name: Create Android wrapper
+        env:
+          WEBSITE_URL: ${{ inputs.website_url }}
+        run: |
+          mkdir grok-android
+          cd grok-android
+          mkdir www
+          echo '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>Opening Grok Workspace...</body></html>' > www/index.html
+          npm init -y
+          npm install @capacitor/core@7 @capacitor/android@7
+          npm install -D @capacitor/cli@7
+          cat > capacitor.config.json <<'JSON'
+          {
+            "appId": "com.baril.grokworkspace",
+            "appName": "Grok Workspace",
+            "webDir": "www",
+            "server": {
+              "url": "${{ inputs.website_url }}",
+              "cleartext": false
+            }
+          }
+          JSON
+          npx cap add android
+          npx cap sync android
+
+      - name: Build APK
+        working-directory: grok-android/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: grok-workspace-apk
+          path: grok-android/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+          
