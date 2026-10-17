@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #10120e;
+  --color-surface: #1a1d17;
+  --color-raised: #262b20;
+  --color-fg: #e8eadf;
+  --color-muted: #b4b8a4;
+  --color-primary: #d6f25a;
+  --color-ink: #14160f;
+  --color-danger: #ff7a55;
+  --color-border: #3a4032;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    min-height: 100dvh;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-ink);
+  }
+}
+
+@keyframes akar-scan {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+.akar-scan {
+  animation: akar-scan 1.15s ease-in-out infinite;
+}
+
+.akar-ticks {
+  height: 10px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-border) 0 1px,
+    transparent 1px 8px
+  );
+}
+
+.safe-b {
+  padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .akar-scan {
+    animation: none;
+    transform: none;
+    width: 45%;
+  }
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
